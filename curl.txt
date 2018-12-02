@@ -1,0 +1,27 @@
+curl -i -X POST \
+  --url http://localhost:8001/services/ \
+  --data 'name=penztarca-service' \
+  --data 'url=https://localhost:10010'
+
+curl -X POST \
+  http://localhost:8001/routes \
+  -d 'protocols=http' \
+  -d 'service.id=333' \
+  -d 'paths=/penztarca'
+
+curl -X POST \
+  --url http://localhost:8001/consumers/ \
+  --data "username=mobilclient"
+
+curl -X POST \
+  --url http://localhost:8001/consumers/ \
+  --data "username=webclient"
+
+
+curl -X POST http://kong:8001/services/penztarca-service/plugins \
+    --data "name=ApiKeyAuth" 
+
+curl -X POST http://kong:8001/apis/penztarca-service/plugins \
+    --data "name=rate-limiting"  \
+    --data "config.second=5" \
+    --data "config.hour=10000"
