@@ -1,0 +1,487 @@
+swagger: "2.0"
+info:
+  version: "0.0.1"
+  title: penztarca-api
+# during dev, should point to your local machine
+host: localhost:10010
+# basePath prefixes all resource paths 
+basePath: /
+# 
+schemes:
+  # tip: remove http to make production-grade
+  - http
+  - https
+# format of bodies a client can send (Content-Type)
+consumes:
+  - application/json
+  - applications/xml
+  - application/octet-stream
+# format of the responses to the client (Accepts)
+produces:
+  - application/json
+  - application/xml
+  - application/octet-stream
+tags:
+- name: "Orders"
+  description: "Operations with orders"
+- name: "Stores"
+  description: "Operations with stores"
+- name: "Users"
+  description: "Operations with user"
+- name: "Authentication"
+  description: "Operations with authentication"
+securityDefinitions:
+  ApiKeyAuth:
+    type: apiKey
+    in: header
+    name: X-Session-ID
+paths:
+  /users:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: user
+    post:
+      description: Creates a new user with a pair of credentials
+      # used as the method name of the controller
+      operationId: createUser
+      produces:
+      - "application/json"
+      - "application/xml"
+      tags:
+      - "Users"
+      parameters:
+        - name: user
+          in: body
+          description: The user to create
+          required: true
+          schema:
+            $ref: "#/definitions/User"
+      responses:
+        "201":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/CreateUserResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /user/loginUser:
+    x-swagger-router-controller: user
+    post:
+      description: Authenticates a user with a pair of credentials and returns a sessionID
+      operationId: loginUser
+      produces:
+      - "application/json"
+      tags:
+      - "Authentication"
+      - "Users"
+      parameters:
+        - name: credentials
+          in: body
+          description: Credentials to authentication the user with
+          required: true
+          schema:
+            $ref: "#/definitions/Credentials"
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/AuthenticationResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /user/logoutUser:
+    x-swagger-router-controller: user
+    post:
+      description: User logout
+      operationId: logoutUser
+      produces:
+      - "application/json"
+      tags:
+      - "Authentication"
+      - "Users"
+      #parameters:
+        #- name: x-session-id
+        #  in: header
+        #  description: Session ID
+        #  required: true
+        #  type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/AuthenticationResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+      security:
+      - ApiKeyAuth: [] 
+  /user/getBalance:
+    x-swagger-router-controller: user
+    post:
+      description: Gets the balance on a card
+      operationId: getBalance
+      produces:
+      - "application/json"
+      tags:
+      - "Authentication"
+      - "Users"
+      parameters:
+        - name: userId
+          in: body
+          description: UserId
+          required: true
+          schema:
+            $ref: "#/definitions/id"
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/BalanceResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+      security:
+      - ApiKeyAuth: []
+  /stores:
+    # our controller name
+    x-swagger-router-controller: store
+    get:
+      operationId: getStores
+      produces:
+      - "application/json"
+      description: get the stores list
+      tags:
+      - "Stores"
+      - "Authentication"
+      # define the type of response for Success "200" and Error
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/GetStoresListResponse"
+        "401":
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+      security:
+      - ApiKeyAuth: [] 
+  /stores/{storeId}/storeItems:
+    x-swagger-router-controller: store
+    get:
+      operationId: getStoreItems
+      produces:
+      - "application/json"
+      description: get the items list
+      tags:
+      - "Stores"
+      - "Authentication"
+      parameters:
+        - name: storeId
+          in: path
+          description: storeId
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/GetItemListResponse"
+        "401":
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+      security:
+      - ApiKeyAuth: []
+    put:
+      operationId: updateStoreItem
+      produces:
+      - "application/json"
+      description: get the items list
+      tags:
+      - "Stores"
+      - "Authentication"
+      parameters:
+        - name: storeId
+          in: path
+          description: storeId
+          required: true
+          type: string
+        - name: Item
+          in: body
+          description: Credentials to authentication the user with
+          required: true
+          schema:
+            $ref: "#/definitions/Item"
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/UpdateItemResponse"
+        "401":
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+      security:
+      - ApiKeyAuth: []
+    delete:
+      operationId: deleteStoreItem
+      produces:
+      - "application/json"
+      description: get the items list
+      tags:
+      - "Stores"
+      - "Authentication"
+      parameters:
+        - name: storeId
+          in: path
+          description: storeId
+          required: true
+          type: string
+        - name: ItemId
+          in: body
+          description: Credentials to authentication the user with
+          required: true
+          schema:
+            $ref: "#/definitions/id"
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/DeleteItemResponse"
+        "401":
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+      security:
+      - ApiKeyAuth: []
+  /stores/{storeId}/storeItems/{itemId}:
+    x-swagger-router-controller: store
+    get:
+      operationId: buyStoreItem
+      produces:
+      - "application/json"
+      description: get the items list
+      tags:
+      - "Stores"
+      - "Authentication"
+      parameters:
+        - name: storeId
+          in: path
+          description: The ID of a store
+          required: true
+          type: string
+        - name: itemId
+          in: path
+          description: The ID of an item
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/BuyItemResponse"
+        "401":
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "403":
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+      security:
+      - ApiKeyAuth: []
+  /swagger:
+    x-swagger-pipe: swagger_raw
+# complex objects have schema definitions
+definitions:
+  Item:
+    type: object
+    properties:
+      itemId:
+        $ref: "#/definitions/id"
+      title:
+        $ref: "#/definitions/title" 
+      price:
+        $ref: "#/definitions/price" 
+    required:
+      - title
+      - price
+  Store:
+    type: object
+    properties:
+      title:
+        $ref: "#/definitions/title" 
+    required:
+      - title
+  Credentials:
+    required:
+      - username
+      - password
+    properties:
+      username:
+        $ref: "#/definitions/username"
+      password:
+        $ref: "#/definitions/password"
+  SignupCreds:
+    required:
+      - username
+      - password
+      - cardnumber
+    properties:
+      username:
+        $ref: "#/definitions/username"
+      password:
+        $ref: "#/definitions/password"
+      cardnumber:
+        $ref: "#/definitions/cardnumber"
+  User:
+    required:
+      - credentials
+    properties:
+      credentials:
+        $ref: "#/definitions/SignupCreds"
+  DeleteItemResponse:
+    required:
+      - message
+    properties:
+      message:
+        $ref: "#/definitions/message"
+  UpdateItemResponse:
+    required:
+      - message
+    properties:
+      message:
+        $ref: "#/definitions/message"
+  GetItemListResponse:
+    required:
+      - stores
+    properties:
+      # The array of items
+      stores:
+        type: array
+        items: 
+          $ref: "#/definitions/Item"
+  BalanceResponse:
+    required: 
+      - balance
+    properties:
+      balance:
+        $ref: "#/definitions/balance"
+  CreateUserResponse:
+    required:
+      - id
+    properties:
+      id:
+        $ref: "#/definitions/id"
+  ErrorResponse:
+    required:
+      - message
+    properties:
+      message:
+        $ref: "#/definitions/message"
+  GetStoresListResponse:
+    required:
+      - stores
+    properties:
+      # The array of stores
+      stores:
+        type: array
+        items: 
+          $ref: "#/definitions/Store"
+  AuthenticationResponse:
+    required:
+      - message
+    properties:
+      message:
+        $ref: "#/definitions/message"
+      sessionId:
+        $ref: "#/definitions/id"
+  message:
+    type: string
+    example: 'Logout succesfull.'
+  id:
+    type: string
+    example: '123'
+  title:
+    type: string
+    example: 'burger king'
+  username:
+    type: string
+    example: 'jwalker'
+  password:
+    type: string
+    example: 'supersecret'
+  cardnumber:
+    type: string
+    example: '1113-123123-122'
+  balance:
+    type: integer
+    example: 12456
+  price:
+    type: integer
+    example: 12456
+  BuyItemResponse:
+    required:
+      - message
+    properties:
+      message:
+        $ref: "#/definitions/message"
